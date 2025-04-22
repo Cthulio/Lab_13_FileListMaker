@@ -39,7 +39,7 @@ public class FileListMaker {
                     case "i":
                         insertItem();
                         break;
-                    case "V":
+                    case "V"://changed
                     case "v":
                         viewList();
                         break;
@@ -47,7 +47,7 @@ public class FileListMaker {
                     case "q":
                         quitList();
                         break;
-                    case "M":
+                    case "M"://from here down added
                     case "m":
                         moveItem();
                         break;
@@ -74,7 +74,7 @@ public class FileListMaker {
     {
         //Add an item always puts it at the end of the list.
         myArrList.add(SafeInput.getNonZeroLenString(in, "What do you want to enter?"));
-        needToSave = true;
+        needToSave = true;//added this to any modification to the list.
     }
 
     public static void deleteItem()
@@ -85,7 +85,6 @@ public class FileListMaker {
         needToSave = true;
         myArrList.trimToSize();//keep from adding a bunch of blank lines to the list/file.
     }
-
 
     public static void insertItem()
     {
@@ -152,7 +151,7 @@ public class FileListMaker {
         MainMenu.add("I – Insert an item into the list");
         MainMenu.add("V - View the list");//changed
         MainMenu.add("Q – Quit the program");
-
+        //added
         MainMenu.add("M - Move an item");
         MainMenu.add("O - Open a list file from disk");
         MainMenu.add("S - Save the current list file to disk");
@@ -175,11 +174,11 @@ public class FileListMaker {
         viewList();
         //save the position and content of a deleted item, then compare to the place the user wants to "create a new item".
         int oldPosition = SafeInput.getRangedInt(in,"Enter the line you would like to move",1,myArrList.size())-1;
-        // account for an index shift by adding 1 if the original position was larger than the second
+
         int newPosition = SafeInput.getRangedInt(in,"Enter the line you would like to move it to",1,myArrList.size())-1;
 
 
-
+        // account for an index shift by adding 1 if the original position was smaller than the newest
         if (oldPosition < newPosition)
         {
             myArrList.add(newPosition+1,myArrList.get(oldPosition));
@@ -190,18 +189,19 @@ public class FileListMaker {
             myArrList.add(newPosition,myArrList.get(oldPosition));
             myArrList.remove(oldPosition+1);
         }
-        else
+        else//if it's not moving we don't need to move it.
             System.out.println("It's already there! Job's done!");
 
         needToSave = true;
     }
     public static void openList()
-    {
+    {// this works very similar to the FileInspector from Lab 12, so i'm reusing that code where it's applicable.
         JFileChooser chooser = new JFileChooser();
         File selectedFile;
         String rec="";
         if(!myArrList.isEmpty())
         {
+            //if the user already has data in their list, ask to save it before overwriting.
             if (SafeInput.getYNConfirm(in,"Would you like to save the previous list?")) {
                 saveList();
             }
@@ -248,7 +248,7 @@ public class FileListMaker {
         {
             System.out.println("You should put something in your file before you save!");
         }
-        else {
+        else {//this is very similar to the DataSaver from Lab 12, reusing that code where applicable.
             String fileName = SafeInput.getNonZeroLenString(in, "Please name your file.");
             System.out.println("Saving your file...");
             File workingDirectory = new File(System.getProperty("user.dir"));
@@ -257,13 +257,11 @@ public class FileListMaker {
             try {
                 OutputStream out = new BufferedOutputStream(Files.newOutputStream(file, CREATE));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
-
                 for (String recs : myArrList)
                 {
                     writer.write(recs, 0, recs.length());
                     writer.newLine();
                 }
-
                 writer.close();
                 System.out.println("Saved!");
             } catch (Exception e) {
@@ -272,7 +270,7 @@ public class FileListMaker {
         }
     }
     public static void clearList()
-    {
+    {//remove all the data from the arraylist by iterating through it
         if (SafeInput.getYNConfirm(in,"Are you sure you want to remove ALL ITEMS from your list?")) {
             String confirmClear = SafeInput.getNonZeroLenString(in, "Type DELETE to confirm.");
             if (confirmClear.equals("DELETE")) {
@@ -282,7 +280,8 @@ public class FileListMaker {
                     myArrList.remove(i - 1);
                 }
 
-                needToSave = true;
+                needToSave = true;//when we delete (see also: clear) a list, we should ask the user at some point to save.
+                //note: they will not be able to save immediately, so it will notify them to put something in the list first.
             } else
                 System.out.println("Canceling clear.");
         }else
